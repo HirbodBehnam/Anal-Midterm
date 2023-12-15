@@ -1,1 +1,41 @@
 \section{پی‌نوشت}
+من حدودا سال پیش یک بک‌اند برای یک سامانه‌ی انتخاب واحد خودم نوشتم با زبان
+\lr{Golang} و دیتابیس \lr{PostgreSQL}
+که شاید دوست داشته باشید یه نگاهی بندازید:
+
+\begin{latin}
+\noindent
+\link{https://github.com/HirbodBehnam/CourseEnrollment}{https://github.com/HirbodBehnam/CourseEnrollment}
+\end{latin}
+
+البته به این خوبی و کاملی طراحی که برای این میانترم کردم نیست! اول از همه اینکه معماری این سیستم
+بر پایه و اساس استفاده سنگین از
+\lr{cache}
+هست. توی سرویس
+\lr{Enrollment Server}
+تقریبا کل دیتابیس به صورت خاصی کش شده و
+\lr{eventual consistency}
+به نحوی داریم چون که
+\lr{batcher}
+بالاخره از صف داخل
+\lr{RabbitMQ}
+می‌خونه تغییرات رو و اعمال می‌کنه. سرویس
+\lr{Authorization Core}
+به صورت
+\lr{builtin}
+می‌تونه که
+\lr{horizental scale}
+بشه. ولی سرویس
+\lr{Enrollment Server}
+باید حتما بر اساس دپارتمان
+\lr{horizental scale}
+بشه.
+
+در کل سعی کردم که یک
+\lr{Readme}
+جامع بنویسم براش. (پی‌نوشت: وقتی داشتم یه بار از روش می‌خوندم دیدم که یه قسمت رو جا انداختم که بنویسم!)
+آخرِ آخر
+\lr{Readme}
+هم نوشتم که توی یه ماشین مجازی با یک گیگابایت رم و 1 هسته
+\lr{CPU}
+حدودا 3500 درخواست بر ثانیه رو می‌تونه هندل کنه.
