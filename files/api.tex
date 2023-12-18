@@ -1,1 +1,92 @@
 \section{API}
+\subsection{درخواست‌های فرانت‌اند}
+در این قسمت به بررسی
+\lr{API}های
+تمامی سرویس‌ها می‌پردازیم که کاربران
+(یعنی اساتید و دانشجویان و مسئولان آموزشی)
+و به صورت کلی فرانت‌اند می‌تواند با آن‌ها در تعامل باشد. اولین قسمت مسیر هر
+\lr{URL}
+نشان‌دهنده‌ی سرویسی است که این درخواست به آن می‌رود.
+\begin{latin}
+\begin{lstlisting}
+POST /auth/login
+Body Fields:
+    - username: string
+    - password: string
+\end{lstlisting}
+\end{latin}
+\begin{latin}
+\begin{lstlisting}
+POST /staff/add-course
+Body Fields:
+    - id: int
+    - department-id: int
+    - name: string
+    - requirements: [int]
+\end{lstlisting}
+\end{latin}
+\begin{latin}
+\begin{lstlisting}
+POST /professor/add-lectured-course
+Body Fields:
+    - id: int
+    - days: [datetime]
+    - final-exam: datetime
+    - capacity: int
+\end{lstlisting}
+\end{latin}
+\begin{latin}
+\begin{lstlisting}
+POST /professor/submit-scores
+Body Fields:
+    - course-id: int
+    - course-group: int
+    - semester: int
+    - grades: map[int, float]
+\end{lstlisting}
+\end{latin}
+\begin{latin}
+\begin{lstlisting}
+{POST,PUT,DELETE} /enrollment/enroll
+Body Fields:
+    - course-id: int
+    - course-group: int
+\end{lstlisting}
+\end{latin}
+\begin{latin}
+\begin{lstlisting}
+GET /enrollment/enroll
+\end{lstlisting}
+\end{latin}
+\begin{latin}
+\begin{lstlisting}
+GET /enrollment/courses
+Query Parameters:
+    - department: int
+\end{lstlisting}
+\end{latin}
+\begin{latin}
+\begin{lstlisting}
+GET /student/get-grades
+\end{lstlisting}
+\end{latin}
+\subsection{درخواست‌های داخلی}
+بعضا برخی از سرویس‌ها نیاز دارن که به صورت
+\lr{synchronous}
+یک سرویس دیگر را فراخوانی کنند. در این حالت حتما باید به صورت مستقیم به یکی از سرویس‌ها درخواست
+زده بشود که عملا یک درخواست داخلی حساب می‌شود. در اینجا من پیشنهاد می‌کنم که حتما از
+\lr{gRPC}
+استفاده کنیم تا حداکثر سرعت و کمترین پهنای باند را بین میکروسرویس‌ها بگیریم.
+به عنوان مثال ما در
+\lr{student service}
+نیاز داریم که
+\lr{API}ای
+داشته باشیم که بتوان به کمک آن مشخصات مربوط به انتخاب واحد دانشجو مثل حداکثر تعداد واحد و
+وضعیت مجاز بودن و زمان انتخاب واحد را گرفت. همچنین مثلا نیاز به
+\lr{API}ای
+داریم که به کمک آن بتوان چک کرد که آیا شخصی درسی را در ترم‌های قبل برداشته است یا خیر.
+یا مثلا در
+\lr{staff}
+نیاز داریم که لیست تمامی درس‌های دانشکده‌های مختلف را بگیریم و در
+\lr{professor}
+نیز نیاز داریم که لیست تمامی درس‌های استادی در ترم خاصی را بگیریم.
