@@ -6,7 +6,23 @@
 (یعنی اساتید و دانشجویان و مسئولان آموزشی)
 و به صورت کلی فرانت‌اند می‌تواند با آن‌ها در تعامل باشد. اولین قسمت مسیر هر
 \lr{URL}
-نشان‌دهنده‌ی سرویسی است که این درخواست به آن می‌رود.
+نشان‌دهنده‌ی سرویسی است که این درخواست به آن می‌رود. همچنین دقت کنید که در همه‌ی
+\lr{API}ها
+غیر از
+\verb|login|
+نیاز است که توکن ما در هدر‌های
+\lr{HTTP}
+به مقصد فرستاده شود. به کمک همین موضوع می‌توان کاربر فرستنده را اهراز هویت کرد. حال
+\lr{API}های
+مورد نظر را شرح می‌دهیم:
+
+در ابتدا این
+\lr{endpoint}
+کار که می‌کند این است که یک نام‌کاربری و رمزعبور را صحت سنجی می‌کند و به کسی که درخواست زده است
+بر می‌گرداند که کاربر مورد نظر دانشجو یا استاد یا مسئول آموزش است و یااینکه اصلا رمز عبور
+کاربر درست است یا خیر. همچنین در صورتی که رمز عبور درست بود یک
+\lr{session token}
+نیز برگردانده می‌شود.
 \begin{latin}
 \begin{lstlisting}
 POST /auth/login
@@ -15,6 +31,15 @@ Body Fields:
     - password: string
 \end{lstlisting}
 \end{latin}
+در ادامه باید یک
+\lr{API}
+تعریف کنیم که مسئولان آموزش به کمک آن بتوانند که یک درس جدید تعریف بکنند. در
+\lr{syntax}
+زیر
+\verb|[int]|
+به معنی یک آرایه از
+\verb|int|
+است. برای تعریف درس به نام درس، شماره درس، دپارتمانی که آن درس به آن تعلق دارد و پیش‌نیاز‌های آن نیاز است.
 \begin{latin}
 \begin{lstlisting}
 POST /staff/add-course
@@ -25,6 +50,12 @@ Body Fields:
     - requirements: [int]
 \end{lstlisting}
 \end{latin}
+در ادامه بعد از تعریف درس نیاز است که
+\lr{endpoint}ای
+داشته باشیم که به کمک آن اساتید بتوانند اعلام آمادگی برای تدریس بکنند. در اینجا نیاز به فرمت خاصی داریم
+که به کمک آن استاد بگوید که چه روز و ساعت‌هایی درس برقرار است.
+(پی‌نوشت ریز: من خودم یک نمایش مشابه در \link{https://github.com/HirbodBehnam/CourseEnrollment/blob/97cf4ea1a9d3b545409a95d5578182cf76d11b82/pkg/course/class\_time.go\#L14-L22}{اینجا} قبلا درست کرده بودم)
+در ادامه نیز تاریخ امتحان پایانترم و ظرفیت درس را استاد مشخص می‌کند.
 \begin{latin}
 \begin{lstlisting}
 POST /professor/add-lectured-course
@@ -35,6 +66,14 @@ Body Fields:
     - capacity: int
 \end{lstlisting}
 \end{latin}
+همچنین اساتید باید بتوانند که نمرات یک درسی که در گذشته ارائه دادند را ثبت کنند.
+برای این کار نیاز به شماره درس و گروه و ترم ارائه شده (دقت کنید که برخی اساتید سال بعد نمره می‌دهند!)
+داریم. همچنین یک
+\lr{dictionary}
+از شماره دانشجویی به نمره نیز باید داشته باشیم که نشان دهنده‌ی نمرات دانش‌آموزان است.
+به کمک این مدل استاد می‌تواند مثلا از روی یک فایل
+\lr{csv}
+نمرات را ثبت کند یا اینکه فردی را زودتر از بقیه نمره‌اش را ثبت کند.
 \begin{latin}
 \begin{lstlisting}
 POST /professor/submit-scores
@@ -45,19 +84,45 @@ Body Fields:
     - grades: map[int, float]
 \end{lstlisting}
 \end{latin}
+حال به قسمت انتخاب واحد می‌رسیم. در ابتدا باید یک
+\lr{API}
+تعریف کنیم که امکان ثبت نام در درس را داشته باشد. همچنین با کمی فکر کردن متوجه می‌شویم که حذف
+درس نیز پارامتر‌هایی مثل اخذ درس دارد. پس این دو را به صورت زیر تعریف می‌کنیم:
+(دقت کنید که برای جای کمتر از دو متد HTTP را در یکجا نوشتم)
 \begin{latin}
 \begin{lstlisting}
-{POST,PUT,DELETE} /enrollment/enroll
+{POST,DELETE} /enrollment/enroll
 Body Fields:
     - course-id: int
     - course-group: int
 \end{lstlisting}
 \end{latin}
+در ادامه نیز نیاز داریم که دانشجویان بتوانند گروه خود را عوض کنند.
+\begin{latin}
+\begin{lstlisting}
+PUT /enrollment/enroll
+Body Fields:
+    - course-id: int
+    - course-group: int
+    - new-course-group: int
+\end{lstlisting}
+\end{latin}
+همچنین یک
+\lr{endpoint}
+باید وجود داشته باشد که تمامی درس‌های ثبت نامی یک کاربر را بر می‌گرداند.
+(در ترم جاری)
+این درخواست از نوع
+\lr{GET}
+است و پارامتری ندارد.
 \begin{latin}
 \begin{lstlisting}
 GET /enrollment/enroll
 \end{lstlisting}
 \end{latin}
+در انتها نیز نیاز است که دانشجویان لیست درس‌های یک دپارتمان خاص را ببینند. این
+\lr{API}
+در سرویس انتخاب واحد تعریف شده است چرا که معمولا در انتخاب واحد به آن نیاز است و همچنین نیاز است
+که تعداد ثبت نامی‌های هر درس را نیز به کاربر اعلام کنیم که در دست سرویس انتخاب واحد است.
 \begin{latin}
 \begin{lstlisting}
 GET /enrollment/courses
@@ -65,9 +130,14 @@ Query Parameters:
     - department: int
 \end{lstlisting}
 \end{latin}
+در آخرین
+\lr{endpoint}
+نیز صرفا تابعی باید تعریف کنیم که نمرات دانشجو در ترم خاصی را به او نشان بدهد.
 \begin{latin}
 \begin{lstlisting}
 GET /student/get-grades
+Query Parameters:
+    - semester: int
 \end{lstlisting}
 \end{latin}
 \subsection{درخواست‌های داخلی}
